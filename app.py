@@ -5,8 +5,26 @@ import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, request, jsonify, send_file, session
 from flask_cors import CORS
+from collections import OrderedDict
+from datetime import date, datetime, timedelta, timezone
+from collections import defaultdict
+from io import BytesIO
+import calendar
+import sqlite3
+import pandas as pd
+import os
+import re
+import shutil  # ✅ DB 파일 복사용
+import xmltodict
+import requests
+import ssl
+from requests.adapters import HTTPAdapter
+import base64
+import threading
+import time
+
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
