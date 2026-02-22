@@ -5,7 +5,7 @@ import sqlite3
 from datetime import datetime
 from typing import Any, Dict, List
 
-from flask import Flask, jsonify, request, send_from_directory, request, jsonify, send_file, session
+from flask import Flask, jsonify, request, send_from_directory, jsonify, send_file, session
 from flask_cors import CORS
 from collections import OrderedDict
 from datetime import date, datetime, timedelta, timezone
@@ -60,9 +60,10 @@ def init_db() -> None:
     conn.close()
 
 
-@app.before_first_request
-def _startup() -> None:
-    init_db()
+app = Flask(__name__, static_folder=".", static_url_path="")
+CORS(app)
+
+init_db()   # ⭐ 여기 추가
 
 
 @app.get("/")
