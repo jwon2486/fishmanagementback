@@ -16,7 +16,7 @@ import base64
 import threading
 import time
 from typing import List
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, send_file, abort
 from flask_cors import CORS
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -149,6 +149,39 @@ def api_inventory_bulk():
     conn.commit()
     conn.close()
     return jsonify({"success":True,"updated":len(items)})
+
+
+@app.get("/api/db/download")
+def download_db():
+    # ✅ (권장) 간단 보호: 환경변수 DB_DOWNLOAD_KEY 설정 시 키 없으면 차단
+    required_key = os.environ.get("DB_DOWNLOAD_KEY", "").strip()
+    if required_key:
+        key = (request.args.get("key") or "").strip()
+        if key != required_key:
+            return jsonify({"error": "unauthorized"}), 401
+
+    # ✅ DB가 사용 중일 수 있으니 복사본을 만들어 내려줌
+    src = DATABASE
+    if not os.path.exists(src):
+        return jsonify({"error": "db file not found"}), 404
+
+    tmp = os.path.join(APP_DIR, "fishdb_download.sqlite")
+    try:
+        shutil.copy2(src, tmp)
+
+        # ✅ 다운로드로 보내기
+        return send_file(
+            tmp,
+            as_attachment=True,
+            download_name="fishdb.sqlite",
+            mimetype="application/octet-stream",
+            conditional=True,  # 브라우저 캐시/재개 다운로드에 도움
+        )
+    finally:
+        # ✅ 응답 후 바로 삭제하고 싶으면 여기서 지우면 안 됩니다(전송 중 삭제 위험)
+        # 대신 Render는 재시작/재배포 시 파일이 정리되기도 해서,
+        # 즉시 삭제가 필요하면 별도 스레드/딜레이 삭제 방식 사용.
+        pass
 
 # -----------------------
 # Run
