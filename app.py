@@ -63,7 +63,7 @@ init_db()
 # -----------------------
 @app.get("/")
 def index():
-    return send_from_directory(APP_DIR, "index.html")
+    return "Flask 서버 정상 가동중"
 
 # -----------------------
 # Inventory API
